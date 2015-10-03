@@ -19,9 +19,18 @@ func Index(w http.ResponseWriter, r *http.Request) {
 
 // TemplateIndex lists the available templates as well as their configuration
 func TemplateIndex(w http.ResponseWriter, r *http.Request) {
-	templates := ListTemplates()
-
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
+	templates, err := registry.ListTemplates()
+	if err != nil {
+		// TODO: Pick appropriate response code
+		w.WriteHeader(500)
+		userErr := jsonErr{Code: 500, Text: "Unable to list templates."}
+		if err := json.NewEncoder(w).Encode(userErr); err != nil {
+			panic(err)
+		}
+	}
+
 	w.WriteHeader(http.StatusOK)
 
 	if err := json.NewEncoder(w).Encode(templates); err != nil {
@@ -35,7 +44,7 @@ func TemplateShow(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	templateName := vars["templateName"]
 
-	tmpl, err := GetTemplate(templateName)
+	tmpl, err := registry.GetTemplate(templateName)
 
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
@@ -85,7 +94,7 @@ func TemplateCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	t, err := RegisterTemplate(tmpl)
+	t, err := registry.RegisterTemplate(tmpl)
 	if err != nil {
 		w.WriteHeader(400) // That or 409 Conflict
 		userErr := jsonErr{Code: 400, Text: err.Error()}
@@ -114,8 +123,8 @@ func TemplateUpdate(w http.ResponseWriter, r *http.Request) {
 	if err := json.Unmarshal(body, &tmpl); err != nil {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(422) // unprocessable entity
-		// TODO: Return some minimal error back
-		if err := json.NewEncoder(w).Encode(err); err != nil {
+		userErr := jsonErr{Code: 422, Text: err.Error()}
+		if err := json.NewEncoder(w).Encode(userErr); err != nil {
 			panic(err)
 		}
 		return
@@ -126,7 +135,7 @@ func TemplateUpdate(w http.ResponseWriter, r *http.Request) {
 
 	tmpl.Name = templateName
 
-	tmpl, err = UpdateTemplate(tmpl)
+	tmpl, err = registry.UpdateTemplate(tmpl)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusNotFound)

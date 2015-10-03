@@ -8,17 +8,28 @@ import (
 	"github.com/binder-project/binder-registry/template"
 )
 
-// TODO: Move more validation into the template library
+var registry template.RegistryDB
 
-var templateMap map[string]template.Template
-
+// For the time being we're going to auto-init here
 func init() {
-	templateMap = make(map[string]template.Template)
+	registry = NewInMemoryRegistryDB()
+}
+
+// InMemoryRegistryDB implements a non-thread-safe registry of binder templates
+type InMemoryRegistryDB struct {
+	templateMap map[string]template.Template
+}
+
+// NewInMemoryRegistryDB create a new InMemoryRegistryDB
+func NewInMemoryRegistryDB() InMemoryRegistryDB {
+	var registry InMemoryRegistryDB
+	registry.templateMap = make(map[string]template.Template)
+	return registry
 }
 
 // GetTemplate retrieves the template with name, erroring otherwise
-func GetTemplate(name string) (template.Template, error) {
-	tmpl, ok := templateMap[name]
+func (reg InMemoryRegistryDB) GetTemplate(name string) (template.Template, error) {
+	tmpl, ok := reg.templateMap[name]
 	if !ok {
 		return template.Template{}, errors.New("Template unavailable")
 	}
@@ -27,9 +38,9 @@ func GetTemplate(name string) (template.Template, error) {
 }
 
 // RegisterTemplate registers the template in the DB
-func RegisterTemplate(tmpl template.Template) (template.Template, error) {
+func (reg InMemoryRegistryDB) RegisterTemplate(tmpl template.Template) (template.Template, error) {
 	// Ensure tmpl.Name is available
-	_, exists := templateMap[tmpl.Name]
+	_, exists := reg.templateMap[tmpl.Name]
 	if exists {
 		// Disallow registration if it exists
 		return template.Template{}, errors.New("Template already exists")
@@ -39,24 +50,24 @@ func RegisterTemplate(tmpl template.Template) (template.Template, error) {
 	tmpl.TimeModified = time.Now().UTC()
 	tmpl.TimeCreated = tmpl.TimeModified
 
-	templateMap[tmpl.Name] = tmpl
+	reg.templateMap[tmpl.Name] = tmpl
 	return tmpl, nil
 }
 
 // ListTemplates provides a listing of all registered templates
-func ListTemplates() []template.Template {
-	templates := make([]template.Template, len(templateMap))
+func (reg InMemoryRegistryDB) ListTemplates() ([]template.Template, error) {
+	templates := make([]template.Template, len(reg.templateMap))
 	i := 0
-	for _, tmpl := range templateMap {
+	for _, tmpl := range reg.templateMap {
 		templates[i] = tmpl
 		i++
 	}
-	return templates
+	return templates, nil
 }
 
 // UpdateTemplate will allow for updating ImageName and Command
-func UpdateTemplate(tmpl template.Template) (template.Template, error) {
-	updatedTemplate, ok := templateMap[tmpl.Name]
+func (reg InMemoryRegistryDB) UpdateTemplate(tmpl template.Template) (template.Template, error) {
+	updatedTemplate, ok := reg.templateMap[tmpl.Name]
 	if !ok {
 		return template.Template{}, errors.New("Template unavailable")
 	}
@@ -68,11 +79,11 @@ func UpdateTemplate(tmpl template.Template) (template.Template, error) {
 	if tmpl.Command != "" {
 		updatedTemplate.Command = tmpl.Command
 	}
-	// TODO: If fields are set inappropriately, return new error
 
+	// TODO: If fields are set inappropriately, return new error
 	updatedTemplate.TimeModified = time.Now().UTC()
 
-	templateMap[tmpl.Name] = updatedTemplate
+	reg.templateMap[tmpl.Name] = updatedTemplate
 
 	return updatedTemplate, nil
 }
