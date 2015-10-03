@@ -3,9 +3,12 @@ package main
 
 import (
 	"errors"
+	"time"
 
 	"github.com/binder-project/binder-registry/template"
 )
+
+// TODO: Move more validation into the template library
 
 var templateMap map[string]template.Template
 
@@ -32,6 +35,10 @@ func RegisterTemplate(tmpl template.Template) (template.Template, error) {
 		return template.Template{}, errors.New("Template already exists")
 	}
 
+	// Apply creation times
+	tmpl.TimeModified = time.Now().UTC()
+	tmpl.TimeCreated = tmpl.TimeModified
+
 	templateMap[tmpl.Name] = tmpl
 	return tmpl, nil
 }
@@ -45,4 +52,27 @@ func ListTemplates() []template.Template {
 		i++
 	}
 	return templates
+}
+
+// UpdateTemplate will allow for updating ImageName and Command
+func UpdateTemplate(tmpl template.Template) (template.Template, error) {
+	updatedTemplate, ok := templateMap[tmpl.Name]
+	if !ok {
+		return template.Template{}, errors.New("Template unavailable")
+	}
+
+	// For now we allow updates to image name and command
+	if tmpl.ImageName != "" {
+		updatedTemplate.ImageName = tmpl.ImageName
+	}
+	if tmpl.Command != "" {
+		updatedTemplate.Command = tmpl.Command
+	}
+	// TODO: If fields are set inappropriately, return new error
+
+	updatedTemplate.TimeModified = time.Now().UTC()
+
+	templateMap[tmpl.Name] = updatedTemplate
+
+	return updatedTemplate, nil
 }

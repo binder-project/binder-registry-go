@@ -6,7 +6,6 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"time"
 
 	"github.com/binder-project/binder-registry/template"
 
@@ -32,13 +31,13 @@ func TemplateIndex(w http.ResponseWriter, r *http.Request) {
 
 // TemplateShow displays the requested template
 func TemplateShow(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	vars := mux.Vars(r)
 	templateName := vars["templateName"]
 
 	tmpl, err := GetTemplate(templateName)
 
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusNotFound)
 		userErr := jsonErr{Code: http.StatusNotFound, Text: "Template Not Found"}
 		if err := json.NewEncoder(w).Encode(userErr); err != nil {
@@ -47,7 +46,6 @@ func TemplateShow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 
 	if err := json.NewEncoder(w).Encode(tmpl); err != nil {
@@ -68,20 +66,79 @@ func TemplateCreate(w http.ResponseWriter, r *http.Request) {
 	if err := r.Body.Close(); err != nil {
 		panic(err)
 	}
+
+	if err := json.Unmarshal(body, &tmpl); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		userErr := jsonErr{Code: http.StatusBadRequest, Text: err.Error()}
+		if err := json.NewEncoder(w).Encode(userErr); err != nil {
+			panic(err)
+		}
+		return
+	}
+
+	if tmpl.Name == "" || tmpl.ImageName == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		userErr := jsonErr{Code: http.StatusBadRequest, Text: "name and image-name must be specified"}
+		if err := json.NewEncoder(w).Encode(userErr); err != nil {
+			panic(err)
+		}
+		return
+	}
+
+	t, err := RegisterTemplate(tmpl)
+	if err != nil {
+		w.WriteHeader(400) // That or 409 Conflict
+		userErr := jsonErr{Code: 400, Text: err.Error()}
+		if err := json.NewEncoder(w).Encode(userErr); err != nil {
+			panic(err)
+		}
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+	if err := json.NewEncoder(w).Encode(t); err != nil {
+		panic(err)
+	}
+}
+
+// TemplateUpdate updates an individual template by name
+func TemplateUpdate(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
+	var tmpl template.Template
+	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
+	if err != nil {
+		panic(err)
+	}
+
 	if err := json.Unmarshal(body, &tmpl); err != nil {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(422) // unprocessable entity
+		// TODO: Return some minimal error back
 		if err := json.NewEncoder(w).Encode(err); err != nil {
 			panic(err)
 		}
+		return
 	}
 
-	tmpl.TimeCreated = time.Now().UTC()
-	tmpl.TimeModified = tmpl.TimeCreated
-	t := CreateTemplate(tmpl)
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusCreated)
-	if err := json.NewEncoder(w).Encode(t); err != nil {
+	vars := mux.Vars(r)
+	templateName := vars["templateName"]
+
+	tmpl.Name = templateName
+
+	tmpl, err = UpdateTemplate(tmpl)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusNotFound)
+		userErr := jsonErr{Code: http.StatusNotFound, Text: "Template Not Found"}
+		if err := json.NewEncoder(w).Encode(userErr); err != nil {
+			panic(err)
+		}
+		return
+	}
+
+	w.WriteHeader(http.StatusAccepted)
+	if err := json.NewEncoder(w).Encode(tmpl); err != nil {
 		panic(err)
 	}
 }

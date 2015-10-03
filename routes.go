@@ -35,4 +35,10 @@ var routes = []Route{
 		"/templates",
 		TemplateCreate,
 	},
+	Route{
+		"TemplateUpdate",
+		"PUT",
+		"/templates/{templateName}",
+		TemplateUpdate,
+	},
 }
