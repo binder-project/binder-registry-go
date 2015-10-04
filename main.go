@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/binder-project/binder-registry/registry"
+	"github.com/gorilla/mux"
 )
 
 // RegistryContext keeps context for Store with the API Handlers
@@ -17,11 +18,23 @@ type RegistryContext struct {
 
 // NewRegistryContext initializes the context with a backend
 func NewRegistryContext(store registry.Store, token string) RegistryContext {
-
 	return RegistryContext{
 		Store: store,
 		Token: token,
 	}
+}
+
+// NewRouter sets up a mux.Router with the registry routes
+func NewRouter(ctxt RegistryContext) *mux.Router {
+	router := mux.NewRouter().StrictSlash(true)
+
+	router.Methods("GET").Path("/").HandlerFunc(ctxt.Index)
+	router.Methods("GET").Path("/templates").HandlerFunc(ctxt.TemplateIndex)
+	router.Methods("GET").Path("/templates/{templateName}").HandlerFunc(ctxt.TemplateShow)
+
+	router.Methods("POST").Path("/templates").HandlerFunc(ctxt.TemplateCreate)
+	router.Methods("PUT").Path("/templates/{templateName}").HandlerFunc(ctxt.TemplateUpdate)
+	return router
 }
 
 func main() {
@@ -35,48 +48,8 @@ func main() {
 	store := registry.NewInMemoryStore()
 	ctxt := NewRegistryContext(store, apiKey)
 
-	var routes = []Route{
-		Route{
-			"Index",
-			"GET",
-			"/",
-			ctxt.Index,
-		},
-		Route{
-			"TemplateIndex",
-			"GET",
-			"/templates",
-			ctxt.TemplateIndex,
-		},
-		Route{
-			"TemplateShow",
-			"GET",
-			"/templates/{templateName}",
-			ctxt.TemplateShow,
-		},
-		Route{
-			"TemplateCreate",
-			"POST",
-			"/templates",
-			ctxt.TemplateCreate,
-		},
-		Route{
-			"TemplateUpdate",
-			"PUT",
-			"/templates/{templateName}",
-			ctxt.TemplateUpdate,
-		},
-	}
-	router := NewRouter(routes)
+	router := NewRouter(ctxt)
 
 	log.Println("Serving on :8080")
 	log.Fatal(http.ListenAndServe(":8080", router))
-}
-
-// Route is a simple HTTP Method, Pattern, and Handler pairing
-type Route struct {
-	Name        string
-	Method      string
-	Pattern     string
-	HandlerFunc http.HandlerFunc
 }

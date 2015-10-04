@@ -74,7 +74,7 @@ func (ctxt RegistryContext) Authorize(w http.ResponseWriter, r *http.Request) (i
 
 	// QUESTION: What happens when there are multiple Authorization headers?
 	tokenLine := authHeader[0]
-	authHeader = strings.Split(tokenLine, " ")
+	authHeader = strings.SplitN(tokenLine, " ", 3)
 	if len(authHeader) != 2 || strings.ToLower(authHeader[0]) != "token" {
 		return http.StatusUnauthorized, errors.New("Token field not present in Authorization header. Should be of format 'Authorization: token <key>'")
 	}
@@ -134,8 +134,8 @@ func (ctxt RegistryContext) TemplateCreate(w http.ResponseWriter, r *http.Reques
 
 	t, err := ctxt.RegisterTemplate(tmpl)
 	if err != nil {
-		w.WriteHeader(400) // That or 409 Conflict
-		userErr := jsonErr{Code: 400, Text: err.Error()}
+		w.WriteHeader(http.StatusConflict)
+		userErr := jsonErr{Code: http.StatusConflict, Text: err.Error()}
 		if err := json.NewEncoder(w).Encode(userErr); err != nil {
 			panic(err)
 		}
@@ -173,8 +173,8 @@ func (ctxt RegistryContext) TemplateUpdate(w http.ResponseWriter, r *http.Reques
 
 	if err := json.Unmarshal(body, &tmpl); err != nil {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		w.WriteHeader(422) // unprocessable entity
-		userErr := jsonErr{Code: 422, Text: err.Error()}
+		w.WriteHeader(http.StatusBadRequest)
+		userErr := jsonErr{Code: http.StatusBadRequest, Text: err.Error()}
 		if err := json.NewEncoder(w).Encode(userErr); err != nil {
 			panic(err)
 		}
