@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/binder-project/binder-registry/registry"
 )
@@ -10,18 +12,28 @@ import (
 // RegistryContext keeps context for Store with the API Handlers
 type RegistryContext struct {
 	registry.Store
+	Token string
 }
 
 // NewRegistryContext initializes the context with a backend
-func NewRegistryContext(store registry.Store) RegistryContext {
+func NewRegistryContext(store registry.Store, token string) RegistryContext {
+
 	return RegistryContext{
 		Store: store,
+		Token: token,
 	}
 }
 
 func main() {
+	apiKey := os.Getenv("BINDER_API_KEY")
+
+	if apiKey == "" {
+		fmt.Println("Environment variable BINDER_API_KEY must be non-empty")
+		os.Exit(2)
+	}
+
 	store := registry.NewInMemoryStore()
-	ctxt := NewRegistryContext(store)
+	ctxt := NewRegistryContext(store, apiKey)
 
 	var routes = []Route{
 		Route{

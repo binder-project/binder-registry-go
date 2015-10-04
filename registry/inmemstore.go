@@ -72,9 +72,7 @@ func (store InMemoryStore) UpdateTemplate(tmpl Template) (Template, error) {
 		updatedTemplate.Command = tmpl.Command
 	}
 
-	// TODO: If fields are set inappropriately, return new error
 	updatedTemplate.TimeModified = time.Now().UTC()
-
 	store.templateMap[tmpl.Name] = updatedTemplate
 
 	return updatedTemplate, nil
