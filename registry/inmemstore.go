@@ -1,43 +1,41 @@
-package inmemdb
+package registry
 
-// inmemdb is a non-thread-safe in-memory database for the moment
+// inmemstore is a non-thread-safe in-memory database for the moment
 
 import (
 	"errors"
 	"time"
-
-	"github.com/binder-project/binder-registry/registry"
 )
 
 // InMemoryStore implements a non-thread-safe registry of binder templates
 type InMemoryStore struct {
-	templateMap map[string]registry.Template
+	templateMap map[string]Template
 }
 
 // NewInMemoryStore create a new InMemoryStore
 func NewInMemoryStore() InMemoryStore {
 	var store InMemoryStore
-	store.templateMap = make(map[string]registry.Template)
+	store.templateMap = make(map[string]Template)
 	return store
 }
 
 // GetTemplate retrieves the template with name, erroring otherwise
-func (store InMemoryStore) GetTemplate(name string) (registry.Template, error) {
+func (store InMemoryStore) GetTemplate(name string) (Template, error) {
 	tmpl, ok := store.templateMap[name]
 	if !ok {
-		return registry.Template{}, errors.New("Template unavailable")
+		return Template{}, errors.New("Template unavailable")
 	}
 
 	return tmpl, nil
 }
 
 // RegisterTemplate registers the template in the Store
-func (store InMemoryStore) RegisterTemplate(tmpl registry.Template) (registry.Template, error) {
+func (store InMemoryStore) RegisterTemplate(tmpl Template) (Template, error) {
 	// Ensure tmpl.Name is available
 	_, exists := store.templateMap[tmpl.Name]
 	if exists {
 		// Disallow registration if it exists
-		return registry.Template{}, errors.New("Template already exists")
+		return Template{}, errors.New("Template already exists")
 	}
 
 	// Apply creation times
@@ -49,8 +47,8 @@ func (store InMemoryStore) RegisterTemplate(tmpl registry.Template) (registry.Te
 }
 
 // ListTemplates provides a listing of all registered templates
-func (store InMemoryStore) ListTemplates() ([]registry.Template, error) {
-	templates := make([]registry.Template, len(store.templateMap))
+func (store InMemoryStore) ListTemplates() ([]Template, error) {
+	templates := make([]Template, len(store.templateMap))
 	i := 0
 	for _, tmpl := range store.templateMap {
 		templates[i] = tmpl
@@ -60,10 +58,10 @@ func (store InMemoryStore) ListTemplates() ([]registry.Template, error) {
 }
 
 // UpdateTemplate will allow for updating ImageName and Command
-func (store InMemoryStore) UpdateTemplate(tmpl registry.Template) (registry.Template, error) {
+func (store InMemoryStore) UpdateTemplate(tmpl Template) (Template, error) {
 	updatedTemplate, ok := store.templateMap[tmpl.Name]
 	if !ok {
-		return registry.Template{}, errors.New("Template unavailable")
+		return Template{}, errors.New("Template unavailable")
 	}
 
 	// For now we allow updates to image name and command

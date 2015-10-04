@@ -13,15 +13,15 @@ import (
 )
 
 // Index lists available resources at this endpoint
-func Index(w http.ResponseWriter, r *http.Request) {
+func (ctxt RegistryContext) Index(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "Binder Registry Live!")
 }
 
 // TemplateIndex lists the available templates as well as their configuration
-func TemplateIndex(w http.ResponseWriter, r *http.Request) {
+func (ctxt RegistryContext) TemplateIndex(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-	templates, err := store.ListTemplates()
+	templates, err := ctxt.ListTemplates()
 	if err != nil {
 		// TODO: Pick appropriate response code
 		w.WriteHeader(500)
@@ -39,12 +39,12 @@ func TemplateIndex(w http.ResponseWriter, r *http.Request) {
 }
 
 // TemplateShow displays the requested template
-func TemplateShow(w http.ResponseWriter, r *http.Request) {
+func (ctxt RegistryContext) TemplateShow(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	vars := mux.Vars(r)
 	templateName := vars["templateName"]
 
-	tmpl, err := store.GetTemplate(templateName)
+	tmpl, err := ctxt.GetTemplate(templateName)
 
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
@@ -64,7 +64,7 @@ func TemplateShow(w http.ResponseWriter, r *http.Request) {
 }
 
 // TemplateCreate registers a template
-func TemplateCreate(w http.ResponseWriter, r *http.Request) {
+func (ctxt RegistryContext) TemplateCreate(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
 	var tmpl registry.Template
@@ -94,7 +94,7 @@ func TemplateCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	t, err := store.RegisterTemplate(tmpl)
+	t, err := ctxt.RegisterTemplate(tmpl)
 	if err != nil {
 		w.WriteHeader(400) // That or 409 Conflict
 		userErr := jsonErr{Code: 400, Text: err.Error()}
@@ -111,7 +111,7 @@ func TemplateCreate(w http.ResponseWriter, r *http.Request) {
 }
 
 // TemplateUpdate updates an individual template by name
-func TemplateUpdate(w http.ResponseWriter, r *http.Request) {
+func (ctxt RegistryContext) TemplateUpdate(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
 	var tmpl registry.Template
@@ -135,7 +135,7 @@ func TemplateUpdate(w http.ResponseWriter, r *http.Request) {
 
 	tmpl.Name = templateName
 
-	tmpl, err = store.UpdateTemplate(tmpl)
+	tmpl, err = ctxt.UpdateTemplate(tmpl)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusNotFound)

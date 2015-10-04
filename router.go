@@ -7,7 +7,7 @@ import (
 )
 
 // NewRouter sets up a mux.Router with the registry routes
-func NewRouter() *mux.Router {
+func NewRouter(routes []Route) *mux.Router {
 
 	router := mux.NewRouter().StrictSlash(true)
 	for _, route := range routes {
