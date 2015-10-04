@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/binder-project/binder-registry/template"
+	"github.com/binder-project/binder-registry/registry"
 
 	"github.com/gorilla/mux"
 )
@@ -21,7 +21,7 @@ func Index(w http.ResponseWriter, r *http.Request) {
 func TemplateIndex(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-	templates, err := registry.ListTemplates()
+	templates, err := store.ListTemplates()
 	if err != nil {
 		// TODO: Pick appropriate response code
 		w.WriteHeader(500)
@@ -44,7 +44,7 @@ func TemplateShow(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	templateName := vars["templateName"]
 
-	tmpl, err := registry.GetTemplate(templateName)
+	tmpl, err := store.GetTemplate(templateName)
 
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
@@ -67,7 +67,7 @@ func TemplateShow(w http.ResponseWriter, r *http.Request) {
 func TemplateCreate(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-	var tmpl template.Template
+	var tmpl registry.Template
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
 	if err != nil {
 		panic(err)
@@ -94,7 +94,7 @@ func TemplateCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	t, err := registry.RegisterTemplate(tmpl)
+	t, err := store.RegisterTemplate(tmpl)
 	if err != nil {
 		w.WriteHeader(400) // That or 409 Conflict
 		userErr := jsonErr{Code: 400, Text: err.Error()}
@@ -114,7 +114,7 @@ func TemplateCreate(w http.ResponseWriter, r *http.Request) {
 func TemplateUpdate(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-	var tmpl template.Template
+	var tmpl registry.Template
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
 	if err != nil {
 		panic(err)
@@ -135,7 +135,7 @@ func TemplateUpdate(w http.ResponseWriter, r *http.Request) {
 
 	tmpl.Name = templateName
 
-	tmpl, err = registry.UpdateTemplate(tmpl)
+	tmpl, err = store.UpdateTemplate(tmpl)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusNotFound)
