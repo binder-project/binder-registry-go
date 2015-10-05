@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/justinas/alice"
+
 	"github.com/binder-project/binder-registry/registry"
 	"github.com/gorilla/mux"
 )
@@ -14,6 +16,7 @@ import (
 type RegistryContext struct {
 	registry.Store
 	Token string
+	Name  string
 }
 
 // NewRegistryContext initializes the context with a backend
@@ -28,12 +31,23 @@ func NewRegistryContext(store registry.Store, token string) RegistryContext {
 func NewRouter(ctxt RegistryContext) *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
 
-	router.Methods("GET").Path("/").HandlerFunc(ctxt.Index)
-	router.Methods("GET").Path("/templates").HandlerFunc(ctxt.TemplateIndex)
-	router.Methods("GET").Path("/templates/{templateName}").HandlerFunc(ctxt.TemplateShow)
+	common := alice.New(logger, contentTypeJSON)
 
-	router.Methods("POST").Path("/templates").HandlerFunc(ctxt.TemplateCreate)
-	router.Methods("PUT").Path("/templates/{templateName}").HandlerFunc(ctxt.TemplateUpdate)
+	index := common.ThenFunc(ctxt.Index)
+	templateIndex := common.ThenFunc(ctxt.TemplateIndex)
+	templateShow := common.ThenFunc(ctxt.TemplateShow)
+
+	authed := common.Append(ctxt.Authenticated)
+
+	templateCreate := authed.ThenFunc(ctxt.TemplateCreate)
+	templateUpdate := authed.ThenFunc(ctxt.TemplateUpdate)
+
+	router.Methods("GET").Path("/").Handler(index)
+	router.Methods("GET").Path("/templates").Handler(templateIndex)
+	router.Methods("POST").Path("/templates").Handler(templateCreate) // templateCreate)
+	router.Methods("GET").Path("/templates/{templateName}").Handler(templateShow)
+	router.Methods("PUT").Path("/templates/{templateName}").Handler(templateUpdate)
+
 	return router
 }
 

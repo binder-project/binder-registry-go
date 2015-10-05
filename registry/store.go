@@ -4,7 +4,7 @@ package registry
 // storage, which could be in-memory, mongo, Postgres, Bolt, etc.
 //
 // This current interface makes no guarantees about thread safety, that's
-// up to the implementer!
+// up to the implementer of the interface!
 type Store interface {
 	// GetTemplate retrieves the template with name, erroring otherwise
 	GetTemplate(name string) (Template, error)
