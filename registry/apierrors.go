@@ -1,4 +1,4 @@
-package main
+package registry
 
 // ErrorHint allows you to specify specific fields the user is potentially
 // missing

@@ -1,5 +1,11 @@
 package registry
 
+import (
+	"encoding/json"
+	"net/http"
+	"strings"
+)
+
 // Store is an interface for registering templates into some backend
 // storage, which could be in-memory, mongo, Postgres, Bolt, etc.
 //
@@ -17,4 +23,68 @@ type Store interface {
 
 	// UpdateTemplate will allow for updating ImageName and Command
 	UpdateTemplate(tmpl Template) (Template, error)
+}
+
+// AuthStore is an interface for connecting to some authentication endpoint,
+// assumed to be used as middleware in front of authenticated endpoints
+// much like the default setup for TemplateUpdate or TemplateCreate
+type AuthStore interface {
+	Authorize(inner http.Handler) http.Handler
+}
+
+// NewTokenAuthStore creates a new TokenAuthStore with the single token
+func NewTokenAuthStore(token string) TokenAuthStore {
+	return TokenAuthStore{token}
+}
+
+// TokenAuthStore uses a single token for authentication
+type TokenAuthStore struct {
+	Token string
+}
+
+// Authorize uses token based authentication, presuming that the endpoint is
+// done over HTTPS
+func (authStore TokenAuthStore) Authorize(inner http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		authHeader, hasAuthHeader := r.Header["Authorization"]
+
+		if !hasAuthHeader || len(authHeader) < 1 {
+			w.WriteHeader(http.StatusUnauthorized)
+			err := APIErrorResponse{Message: "Authorization header not set. Should be of format 'Authorization: token key'"}
+			if err := json.NewEncoder(w).Encode(err); err != nil {
+				panic(err)
+			}
+			return
+		}
+
+		// QUESTION: What happens when there are multiple Authorization headers?
+		tokenLine := authHeader[0]
+		authHeader = strings.SplitN(tokenLine, " ", 3)
+
+		if len(authHeader) != 2 || strings.ToLower(authHeader[0]) != "token" {
+			w.WriteHeader(http.StatusUnauthorized)
+			err := APIErrorResponse{Message: "Token field not present in Authorization header. Should be of format 'Authorization: token key'"}
+			if err := json.NewEncoder(w).Encode(err); err != nil {
+				panic(err)
+			}
+			return
+		}
+
+		putativeToken := authHeader[1]
+
+		// TODO: HMAC SHA between shared secret + values, minding timing attacks
+		// TODO #2: See if go has some of this built in nicely
+
+		if putativeToken != authStore.Token {
+			w.WriteHeader(http.StatusUnauthorized)
+			err := APIErrorResponse{Message: "Invalid token"}
+			if err := json.NewEncoder(w).Encode(err); err != nil {
+				panic(err)
+			}
+			return
+		}
+
+		inner.ServeHTTP(w, r)
+
+	})
 }

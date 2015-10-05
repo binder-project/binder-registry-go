@@ -1,4 +1,4 @@
-package main
+package registry
 
 import (
 	"encoding/json"
@@ -7,20 +7,57 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/binder-project/binder-registry/registry"
-
 	"github.com/gorilla/mux"
+	"github.com/justinas/alice"
 )
 
+// NewDefaultRouter sets up a mux.Router with the registry routes
+func NewDefaultRouter(registry Registry) *mux.Router {
+	router := mux.NewRouter().StrictSlash(true)
+
+	logged := alice.New(logger)
+
+	index := logged.ThenFunc(registry.Index)
+	templateIndex := logged.ThenFunc(registry.TemplateIndex)
+	templateShow := logged.ThenFunc(registry.TemplateShow)
+
+	authed := logged.Append(registry.AuthStore.Authorize)
+
+	templateCreate := authed.ThenFunc(registry.TemplateCreate)
+	templateUpdate := authed.ThenFunc(registry.TemplateUpdate)
+
+	router.Methods("GET").Path("/").Handler(index)
+	router.Methods("GET").Path("/templates").Handler(templateIndex)
+	router.Methods("POST").Path("/templates").Handler(templateCreate) // templateCreate)
+	router.Methods("GET").Path("/templates/{templateName}").Handler(templateShow)
+	router.Methods("PUT").Path("/templates/{templateName}").Handler(templateUpdate)
+
+	return router
+}
+
+var common alice.Chain
+
+func init() {
+	common = alice.New(contentTypeJSON)
+}
+
 // Index lists available resources at this endpoint
-func (ctxt RegistryContext) Index(w http.ResponseWriter, r *http.Request) {
+func (registry Registry) Index(w http.ResponseWriter, r *http.Request) {
+	common.ThenFunc(registry.index).ServeHTTP(w, r)
+}
+
+func (registry Registry) index(w http.ResponseWriter, r *http.Request) {
 	// TODO: Navigable API from the root
 	fmt.Fprintln(w, "{\"status\": \"Binder Registry Live!\"}")
 }
 
 // TemplateIndex lists the available templates as well as their configuration
-func (ctxt RegistryContext) TemplateIndex(w http.ResponseWriter, r *http.Request) {
-	templates, err := ctxt.ListTemplates()
+func (registry Registry) TemplateIndex(w http.ResponseWriter, r *http.Request) {
+	common.ThenFunc(registry.templateIndex).ServeHTTP(w, r)
+}
+
+func (registry Registry) templateIndex(w http.ResponseWriter, r *http.Request) {
+	templates, err := registry.ListTemplates()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		err := APIErrorResponse{Message: "Unable to list templates"}
@@ -37,11 +74,15 @@ func (ctxt RegistryContext) TemplateIndex(w http.ResponseWriter, r *http.Request
 }
 
 // TemplateShow displays the requested template
-func (ctxt RegistryContext) TemplateShow(w http.ResponseWriter, r *http.Request) {
+func (registry Registry) TemplateShow(w http.ResponseWriter, r *http.Request) {
+	common.ThenFunc(registry.templateShow).ServeHTTP(w, r)
+}
+
+func (registry Registry) templateShow(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	templateName := vars["templateName"]
 
-	tmpl, err := ctxt.GetTemplate(templateName)
+	tmpl, err := registry.GetTemplate(templateName)
 
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
@@ -60,7 +101,11 @@ func (ctxt RegistryContext) TemplateShow(w http.ResponseWriter, r *http.Request)
 }
 
 // TemplateCreate registers a template
-func (ctxt RegistryContext) TemplateCreate(w http.ResponseWriter, r *http.Request) {
+func (registry Registry) TemplateCreate(w http.ResponseWriter, r *http.Request) {
+	common.ThenFunc(registry.templateCreate).ServeHTTP(w, r)
+}
+
+func (registry Registry) templateCreate(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
 	if err != nil {
 		panic(err)
@@ -69,7 +114,7 @@ func (ctxt RegistryContext) TemplateCreate(w http.ResponseWriter, r *http.Reques
 		panic(err)
 	}
 
-	var tmpl registry.Template
+	var tmpl Template
 
 	if err := json.Unmarshal(body, &tmpl); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -89,7 +134,7 @@ func (ctxt RegistryContext) TemplateCreate(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	t, err := ctxt.RegisterTemplate(tmpl)
+	t, err := registry.RegisterTemplate(tmpl)
 	if err != nil {
 		w.WriteHeader(http.StatusConflict)
 		userErr := APIErrorResponse{Message: err.Error()}
@@ -106,7 +151,11 @@ func (ctxt RegistryContext) TemplateCreate(w http.ResponseWriter, r *http.Reques
 }
 
 // TemplateUpdate updates an individual template by name
-func (ctxt RegistryContext) TemplateUpdate(w http.ResponseWriter, r *http.Request) {
+func (registry Registry) TemplateUpdate(w http.ResponseWriter, r *http.Request) {
+	common.ThenFunc(registry.templateUpdate).ServeHTTP(w, r)
+}
+
+func (registry Registry) templateUpdate(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
 	if err != nil {
 		panic(err)
@@ -115,7 +164,7 @@ func (ctxt RegistryContext) TemplateUpdate(w http.ResponseWriter, r *http.Reques
 		panic(err)
 	}
 
-	var tmpl registry.Template
+	var tmpl Template
 
 	if err := json.Unmarshal(body, &tmpl); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -131,7 +180,7 @@ func (ctxt RegistryContext) TemplateUpdate(w http.ResponseWriter, r *http.Reques
 
 	tmpl.Name = templateName
 
-	tmpl, err = ctxt.UpdateTemplate(tmpl)
+	tmpl, err = registry.UpdateTemplate(tmpl)
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		userErr := APIErrorResponse{Message: "Template Not Found"}
