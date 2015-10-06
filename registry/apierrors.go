@@ -35,3 +35,9 @@ var ExistingTemplateError = APIErrorResponse{Message: "Template already exists"}
 
 // DontPanicError is an APIErrorResponse when there's a mostly catastrophic error
 var DontPanicError = APIErrorResponse{Message: "Internal Server Error. Don't Panic. We will."}
+
+// UnableToListError is an APIErrorResponse reported when templates are unable to be listed
+var UnableToListError = APIErrorResponse{Message: "Unable to list templates"}
+
+// TemplateNotFoundError is an APIErrorResponse reported when the template requested doesn't exist
+var TemplateNotFoundError = APIErrorResponse{Message: "Template Not Found"}

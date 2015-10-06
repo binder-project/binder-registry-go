@@ -10,21 +10,11 @@ func EmptyHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("SUCCESSFUL TEST"))
 }
 
-func setup() {
-	authStore = TokenAuthStore{"HOKEYPOKEY"}
-	authorize = authStore.Authorize(http.HandlerFunc(EmptyHandler))
-	req, _ = http.NewRequest("POST", "", nil)
-	w = httptest.NewRecorder()
-}
-
-func teardown() {
-	req = nil
-	w = nil
-}
-
 func TestInvalidToken(t *testing.T) {
-	setup()
-	defer teardown()
+	authStore := TokenAuthStore{"HOKEYPOKEY"}
+	authorize := authStore.Authorize(http.HandlerFunc(EmptyHandler))
+	req, _ := http.NewRequest("POST", "", nil)
+	w := httptest.NewRecorder()
 
 	req.Header = map[string][]string{
 		"Authorization": {"token BADKEY"},
@@ -35,8 +25,10 @@ func TestInvalidToken(t *testing.T) {
 }
 
 func TestValidToken(t *testing.T) {
-	setup()
-	defer teardown()
+	authStore := TokenAuthStore{"HOKEYPOKEY"}
+	authorize := authStore.Authorize(http.HandlerFunc(EmptyHandler))
+	req, _ := http.NewRequest("POST", "", nil)
+	w := httptest.NewRecorder()
 
 	req.Header = map[string][]string{
 		"Authorization": {"token HOKEYPOKEY"},
@@ -46,8 +38,10 @@ func TestValidToken(t *testing.T) {
 }
 
 func TestNoAuthHeader(t *testing.T) {
-	setup()
-	defer teardown()
+	authStore := TokenAuthStore{"HOKEYPOKEY"}
+	authorize := authStore.Authorize(http.HandlerFunc(EmptyHandler))
+	req, _ := http.NewRequest("POST", "", nil)
+	w := httptest.NewRecorder()
 
 	req.Header = map[string][]string{}
 	authorize.ServeHTTP(w, req)
@@ -56,8 +50,10 @@ func TestNoAuthHeader(t *testing.T) {
 }
 
 func MissingTokenField(t *testing.T) {
-	setup()
-	defer teardown()
+	authStore := TokenAuthStore{"HOKEYPOKEY"}
+	authorize := authStore.Authorize(http.HandlerFunc(EmptyHandler))
+	req, _ := http.NewRequest("POST", "", nil)
+	w := httptest.NewRecorder()
 
 	req.Header = map[string][]string{
 		"Authorization": {"api-key HOKEYPOKEY"},

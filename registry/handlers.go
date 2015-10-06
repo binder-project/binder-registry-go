@@ -60,8 +60,7 @@ func (registry Registry) templateIndex(w http.ResponseWriter, r *http.Request) {
 	templates, err := registry.ListTemplates()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		err := APIErrorResponse{Message: "Unable to list templates"}
-		if err := json.NewEncoder(w).Encode(err); err != nil {
+		if err := json.NewEncoder(w).Encode(UnableToListError); err != nil {
 			panic(err)
 		}
 	}
@@ -86,8 +85,7 @@ func (registry Registry) templateShow(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
-		err := APIErrorResponse{Message: "Template Not Found"}
-		if err := json.NewEncoder(w).Encode(err); err != nil {
+		if err := json.NewEncoder(w).Encode(TemplateNotFoundError); err != nil {
 			panic(err)
 		}
 		return
@@ -106,10 +104,13 @@ func (registry Registry) TemplateCreate(w http.ResponseWriter, r *http.Request) 
 }
 
 func (registry Registry) templateCreate(w http.ResponseWriter, r *http.Request) {
-	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
+	limitedReader := io.LimitReader(r.Body, 1048576)
+	body, err := ioutil.ReadAll(limitedReader)
+
 	if err != nil {
 		panic(err)
 	}
+
 	if err := r.Body.Close(); err != nil {
 		panic(err)
 	}
@@ -135,6 +136,7 @@ func (registry Registry) templateCreate(w http.ResponseWriter, r *http.Request) 
 	}
 
 	t, err := registry.RegisterTemplate(tmpl)
+
 	if err != nil {
 		w.WriteHeader(http.StatusConflict)
 		userErr := APIErrorResponse{Message: err.Error()}
@@ -183,8 +185,7 @@ func (registry Registry) templateUpdate(w http.ResponseWriter, r *http.Request) 
 	tmpl, err = registry.UpdateTemplate(tmpl)
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
-		userErr := APIErrorResponse{Message: "Template Not Found"}
-		if err := json.NewEncoder(w).Encode(userErr); err != nil {
+		if err := json.NewEncoder(w).Encode(TemplateNotFoundError); err != nil {
 			panic(err)
 		}
 		return
