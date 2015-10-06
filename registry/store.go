@@ -41,12 +41,12 @@ type TokenAuthStore struct {
 // done over HTTPS
 func (authStore TokenAuthStore) Authorize(inner http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		authHeader, hasAuthHeader := r.Header["Authorization"]
 
 		if !hasAuthHeader || len(authHeader) < 1 {
 			w.WriteHeader(http.StatusUnauthorized)
-			err := APIErrorResponse{Message: "Authorization header not set. Should be of format 'Authorization: token key'"}
-			if err := json.NewEncoder(w).Encode(err); err != nil {
+			if err := json.NewEncoder(w).Encode(MissingAuthHeaderError); err != nil {
 				panic(err)
 			}
 			return
@@ -58,8 +58,7 @@ func (authStore TokenAuthStore) Authorize(inner http.Handler) http.Handler {
 
 		if len(authHeader) != 2 || strings.ToLower(authHeader[0]) != "token" {
 			w.WriteHeader(http.StatusUnauthorized)
-			err := APIErrorResponse{Message: "Token field not present in Authorization header. Should be of format 'Authorization: token key'"}
-			if err := json.NewEncoder(w).Encode(err); err != nil {
+			if err := json.NewEncoder(w).Encode(MissingTokenFieldError); err != nil {
 				panic(err)
 			}
 			return
@@ -72,8 +71,7 @@ func (authStore TokenAuthStore) Authorize(inner http.Handler) http.Handler {
 
 		if putativeToken != authStore.Token {
 			w.WriteHeader(http.StatusUnauthorized)
-			err := APIErrorResponse{Message: "Invalid token"}
-			if err := json.NewEncoder(w).Encode(err); err != nil {
+			if err := json.NewEncoder(w).Encode(InvalidTokenError); err != nil {
 				panic(err)
 			}
 			return
@@ -82,4 +80,17 @@ func (authStore TokenAuthStore) Authorize(inner http.Handler) http.Handler {
 		inner.ServeHTTP(w, r)
 
 	})
+}
+
+// InvalidTokenError is an APIErrorResponse for when a token is invalid
+var InvalidTokenError = APIErrorResponse{Message: "Invalid token"}
+
+// MissingTokenFieldError is an APIErrorResponse for when the token field is missing
+var MissingTokenFieldError = APIErrorResponse{
+	Message: "Token field not present in Authorization header. Should be of format 'Authorization: token key'",
+}
+
+// MissingAuthHeaderError is an APIErrorResponse for when the Authorization header is not set
+var MissingAuthHeaderError = APIErrorResponse{
+	Message: "Authorization header not set. Should be of format 'Authorization: token key'",
 }

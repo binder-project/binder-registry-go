@@ -32,3 +32,6 @@ var UnavailableTemplateError = APIErrorResponse{Message: "Template unavailable"}
 
 // ExistingTemplateError is an APIErrorResponse with a boilerplate message for when a template already exists
 var ExistingTemplateError = APIErrorResponse{Message: "Template already exists"}
+
+// DontPanicError is an APIErrorResponse when there's a mostly catastrophic error
+var DontPanicError = APIErrorResponse{Message: "Internal Server Error. Don't Panic. We will."}

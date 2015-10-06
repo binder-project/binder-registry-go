@@ -2,8 +2,10 @@ package registry
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -30,17 +32,30 @@ func contentTypeJSON(inner http.Handler) http.Handler {
 	})
 }
 
+// Instead of squashing a potential error in serializing, do it on startup to
+// ensure we can write directly. This relies on DontPanicError still in lieu of
+// creating a const string like
+//   {"message":"Internal Server Error. Don't Panic. We will."}
+var rawPanicMessage []byte
+
+func init() {
+	var err error
+	rawPanicMessage, err = json.Marshal(DontPanicError)
+	if err != nil {
+		log.Panicf("Unable to initialize our panic message: %v", err)
+		os.Exit(3)
+	}
+	fmt.Println(string(rawPanicMessage))
+}
+
 func recoverHandler(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if err := recover(); err != nil {
 				log.Printf("panic: %+v", err)
-				apiError := APIErrorResponse{
-					Message: "Internal Server Error",
-				}
 				w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 				w.WriteHeader(http.StatusInternalServerError)
-				json.NewEncoder(w).Encode(apiError)
+				w.Write(rawPanicMessage)
 			}
 		}()
 
