@@ -1,6 +1,7 @@
 package registry
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 	"time"
@@ -27,4 +28,24 @@ func contentTypeJSON(inner http.Handler) http.Handler {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		inner.ServeHTTP(w, r)
 	})
+}
+
+func recoverHandler(next http.Handler) http.Handler {
+	fn := func(w http.ResponseWriter, r *http.Request) {
+		defer func() {
+			if err := recover(); err != nil {
+				log.Printf("panic: %+v", err)
+				apiError := APIErrorResponse{
+					Message: "Internal Server Error",
+				}
+				w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+				w.WriteHeader(http.StatusInternalServerError)
+				json.NewEncoder(w).Encode(apiError)
+			}
+		}()
+
+		next.ServeHTTP(w, r)
+	}
+
+	return http.HandlerFunc(fn)
 }

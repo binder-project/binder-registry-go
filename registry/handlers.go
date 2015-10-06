@@ -15,13 +15,13 @@ import (
 func NewDefaultRouter(registry Registry) *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
 
-	logged := alice.New(logger)
+	middleware := alice.New(recoverHandler, logger)
 
-	index := logged.ThenFunc(registry.Index)
-	templateIndex := logged.ThenFunc(registry.TemplateIndex)
-	templateShow := logged.ThenFunc(registry.TemplateShow)
+	index := middleware.ThenFunc(registry.Index)
+	templateIndex := middleware.ThenFunc(registry.TemplateIndex)
+	templateShow := middleware.ThenFunc(registry.TemplateShow)
 
-	authed := logged.Append(registry.AuthStore.Authorize)
+	authed := middleware.Append(registry.AuthStore.Authorize)
 
 	templateCreate := authed.ThenFunc(registry.TemplateCreate)
 	templateUpdate := authed.ThenFunc(registry.TemplateUpdate)

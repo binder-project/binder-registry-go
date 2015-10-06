@@ -20,7 +20,7 @@ func main() {
 	store := registry.NewInMemoryStore()
 	authStore := registry.NewTokenAuthStore(apiKey)
 
-	reg := registry.NewRegistry(store, authStore)
+	reg := registry.Registry{store, authStore}
 	router := registry.NewDefaultRouter(reg)
 
 	log.Println("Serving on :8080")
