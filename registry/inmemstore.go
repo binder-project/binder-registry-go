@@ -2,10 +2,7 @@ package registry
 
 // inmemstore is a non-thread-safe in-memory database for the moment
 
-import (
-	"errors"
-	"time"
-)
+import "time"
 
 // InMemoryStore implements a non-thread-safe registry of binder templates
 type InMemoryStore struct {
@@ -23,7 +20,7 @@ func NewInMemoryStore() InMemoryStore {
 func (store InMemoryStore) GetTemplate(name string) (Template, error) {
 	tmpl, ok := store.templateMap[name]
 	if !ok {
-		return Template{}, errors.New("Template unavailable")
+		return Template{}, unavailableTemplateError
 	}
 
 	return tmpl, nil
@@ -35,7 +32,7 @@ func (store InMemoryStore) RegisterTemplate(tmpl Template) (Template, error) {
 	_, exists := store.templateMap[tmpl.Name]
 	if exists {
 		// Disallow registration if it exists
-		return Template{}, errors.New("Template already exists")
+		return Template{}, existingTemplateError
 	}
 
 	// Apply creation times
@@ -61,7 +58,7 @@ func (store InMemoryStore) ListTemplates() ([]Template, error) {
 func (store InMemoryStore) UpdateTemplate(tmpl Template) (Template, error) {
 	updatedTemplate, ok := store.templateMap[tmpl.Name]
 	if !ok {
-		return Template{}, errors.New("Template unavailable")
+		return Template{}, unavailableTemplateError
 	}
 
 	// For now we allow updates to image name and command

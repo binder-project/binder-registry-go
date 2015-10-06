@@ -18,7 +18,7 @@ func main() {
 	}
 
 	store := registry.NewInMemoryStore()
-	authStore := registry.NewTokenAuthStore(apiKey)
+	authStore := registry.TokenAuthStore{apiKey}
 
 	reg := registry.Registry{store, authStore}
 	router := registry.NewDefaultRouter(reg)

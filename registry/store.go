@@ -32,11 +32,6 @@ type AuthStore interface {
 	Authorize(inner http.Handler) http.Handler
 }
 
-// NewTokenAuthStore creates a new TokenAuthStore with the single token
-func NewTokenAuthStore(token string) TokenAuthStore {
-	return TokenAuthStore{token}
-}
-
 // TokenAuthStore uses a single token for authentication
 type TokenAuthStore struct {
 	Token string
