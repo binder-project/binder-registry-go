@@ -10,11 +10,6 @@ func EmptyHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("SUCCESSFUL TEST"))
 }
 
-var authStore TokenAuthStore
-var authorize http.Handler
-var req *http.Request
-var w *httptest.ResponseRecorder
-
 func setup() {
 	authStore = TokenAuthStore{"HOKEYPOKEY"}
 	authorize = authStore.Authorize(http.HandlerFunc(EmptyHandler))
