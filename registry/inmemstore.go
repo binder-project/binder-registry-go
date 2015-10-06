@@ -20,7 +20,7 @@ func NewInMemoryStore() InMemoryStore {
 func (store InMemoryStore) GetTemplate(name string) (Template, error) {
 	tmpl, ok := store.templateMap[name]
 	if !ok {
-		return Template{}, unavailableTemplateError
+		return Template{}, UnavailableTemplateError
 	}
 
 	return tmpl, nil
@@ -32,7 +32,7 @@ func (store InMemoryStore) RegisterTemplate(tmpl Template) (Template, error) {
 	_, exists := store.templateMap[tmpl.Name]
 	if exists {
 		// Disallow registration if it exists
-		return Template{}, existingTemplateError
+		return Template{}, ExistingTemplateError
 	}
 
 	// Apply creation times
@@ -58,7 +58,7 @@ func (store InMemoryStore) ListTemplates() ([]Template, error) {
 func (store InMemoryStore) UpdateTemplate(tmpl Template) (Template, error) {
 	updatedTemplate, ok := store.templateMap[tmpl.Name]
 	if !ok {
-		return Template{}, unavailableTemplateError
+		return Template{}, UnavailableTemplateError
 	}
 
 	// For now we allow updates to image name and command
@@ -70,6 +70,7 @@ func (store InMemoryStore) UpdateTemplate(tmpl Template) (Template, error) {
 	}
 
 	updatedTemplate.TimeModified = time.Now().UTC()
+
 	store.templateMap[tmpl.Name] = updatedTemplate
 
 	return updatedTemplate, nil

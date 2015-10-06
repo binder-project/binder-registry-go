@@ -27,5 +27,8 @@ func (apiError APIErrorResponse) Error() string {
 	return string(b)
 }
 
-var unavailableTemplateError = APIErrorResponse{Message: "Template unavailable"}
-var existingTemplateError = APIErrorResponse{Message: "Template already exists"}
+// UnavailableTemplateError is an APIErrorResponse with a boilerplate unavailable template message
+var UnavailableTemplateError = APIErrorResponse{Message: "Template unavailable"}
+
+// ExistingTemplateError is an APIErrorResponse with a boilerplate message for when a template already exists
+var ExistingTemplateError = APIErrorResponse{Message: "Template already exists"}
