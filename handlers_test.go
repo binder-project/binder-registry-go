@@ -8,7 +8,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/binder-project/binder-registry/registry/mocks"
+	"github.com/binder-project/binder-registry/mocks"
 	"github.com/gorilla/mux"
 )
 
