@@ -1,7 +1,5 @@
 package registry
 
-import "encoding/json"
-
 // ErrorHint allows you to specify specific fields the user is potentially
 // missing
 type ErrorHint struct {
@@ -20,11 +18,7 @@ type APIErrorResponse struct {
 // Error implements the error interface and tries to return the serialized JSON
 // form of the APIErrorResponse
 func (apiError APIErrorResponse) Error() string {
-	b, err := json.Marshal(apiError)
-	if err != nil {
-		return apiError.Message
-	}
-	return string(b)
+	return apiError.Message
 }
 
 // UnavailableTemplateError is an APIErrorResponse with a boilerplate unavailable template message
