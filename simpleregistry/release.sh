@@ -14,6 +14,8 @@ TAG=${1:-}
 NAME=${2:-}
 DESCRIPTION="Prototypal release of the binder template registry"
 
+echo "Releasing '$TAG' - $NAME: $DESCRIPTION"
+
 make
 make docker-upload
 
@@ -31,8 +33,6 @@ github-release upload \
   --tag "$TAG" \
   --name "linux-amd64-simpleregistry" \
   --file bin/linux-amd64-simpleregistry
-
-docker push 
 
 github-release upload \
   --user "$USER" \
