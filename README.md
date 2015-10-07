@@ -1,6 +1,12 @@
 # Binder Registry
 
+[![Build Status](https://travis-ci.org/binder-project/binder-registry.svg?branch=master)](https://travis-ci.org/binder-project/binder-registry)
+
 CRUD for Binder Templates.
+
+:warning: Prototype :warning:
+
+This is an initial implementation of the [registry API from the Binder API spec proposal](https://github.com/jupyter/enhancement-proposals/pull/5).
 
 ## Go get it.
 
