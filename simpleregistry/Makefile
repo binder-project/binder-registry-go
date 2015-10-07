@@ -9,5 +9,6 @@ darwin:
 docker: linux
 	docker build -t binder/registry .
 
-upload: docker
+docker-upload: docker
 	docker push binder/registry
+
