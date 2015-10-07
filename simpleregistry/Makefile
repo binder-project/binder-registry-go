@@ -6,5 +6,8 @@ linux:
 darwin:
 	 CGO_ENABLED=0 GOOS=darwin go build -a -tags netgo -ldflags '-w' -o bin/darwin-amd64-simpleregistry .
 
-docker:
+docker: linux
 	docker build -t binder/registry .
+
+upload: docker
+	docker push binder/registry
