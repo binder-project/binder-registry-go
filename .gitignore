@@ -23,5 +23,5 @@ _testmain.go
 *.test
 *.prof
 
-# Built binary
-binder-registry
+# Built binaries
+simpleregistry/simpleregistry

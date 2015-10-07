@@ -2,7 +2,6 @@ package registry
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -45,7 +44,6 @@ func init() {
 		log.Panicf("Unable to initialize our panic message: %v", err)
 		os.Exit(3)
 	}
-	fmt.Println(string(rawPanicMessage))
 }
 
 func recoverHandler(next http.Handler) http.Handler {

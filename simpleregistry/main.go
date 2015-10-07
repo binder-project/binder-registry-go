@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/binder-project/binder-registry/registry"
+	registry "github.com/binder-project/binder-registry"
 )
 
 func main() {
