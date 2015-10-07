@@ -7,11 +7,12 @@ if [ ! -e "$( which github-release )" ]; then
   exit 2
 fi
 
-TAG="v0.0.1"
-NAME="Actual Actuator"
+declare -xr USER="binder-project"
+declare -xr REPO="binder-registry"
+
+TAG=${1:-}
+NAME=${2:-}
 DESCRIPTION="Prototypal release of the binder template registry"
-USER="binder-project"
-REPO="binder-registry"
 
 make
 make docker-upload
