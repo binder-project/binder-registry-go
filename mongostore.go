@@ -1,19 +1,12 @@
 package registry
 
-type MongoStore struct {
-}
+func NewMongoStore(server string, database string, collection string) Collection {
+    session, error := mgo.Dial(server);
+    if (error) {
+        panic(error);
+    }
+    defer session.Close();
 
-func NewMongoStore() MongoStore {
-}
-
-func (store MongoStore) GetTemplate(name string) (Template, error) {
-}
-
-func (store MongoStore) RegisterTemplate(tmpl Template) (Template, error) {
-}
-
-func (store MongoStore) ListTemplates() ([]Template, error) {
-}
-
-func (store MongoStore) UpdateTemplate(tmpl Template) (Template, error) {
+    connection = session.DB(database).C(collection)
+    return collection
 }
