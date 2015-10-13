@@ -1,12 +1,16 @@
 package registry
 
-func NewMongoStore(server string, database string, collection string) Collection {
+import "gopkg.in/mgo.v2"
+
+func NewMongoStore(server string,
+                    database string,
+                    collection string) (*mgo.Collection, error) {
     session, error := mgo.Dial(server);
-    if (error) {
-        panic(error);
+    if (error != nil) {
+        return nil, error
     }
     defer session.Close();
 
-    connection = session.DB(database).C(collection)
-    return collection
+    connection := session.DB(database).C(collection)
+    return connection, nil
 }
