@@ -50,3 +50,15 @@ func (store MongoStore) RegisterTemplate(tmpl Template) (Template, error) {
 
     return tmpl, nil
 }
+
+func (store MongoStore) ListTemplates() ([]Template, error) {
+    var results []Template
+
+    err := store.connection.Find(bson.M{}).All(&results)
+
+    if (err != nil) {
+        return results, err
+    }
+
+    return results, nil
+}
