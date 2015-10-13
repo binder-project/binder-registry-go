@@ -1,5 +1,6 @@
 package registry
 
+import "time"
 import "gopkg.in/mgo.v2"
 import "gopkg.in/mgo.v2/bson"
 
@@ -29,4 +30,23 @@ func (store MongoStore) GetTemplate(name string) (Template, error) {
        return Template{}, UnavailableTemplateError
     }
     return result, nil
+}
+
+func (store MongoStore) RegisterTemplate(tmpl Template) (Template, error) {
+    result, err := store.GetTemplate(tmpl.Name)
+    if (err != nil && result != Template{}) {
+        // This template is already in the database
+        return Template{}, ExistingTemplateError
+    }
+
+    tmpl.TimeModified = time.Now().UTC()
+    tmpl.TimeCreated = tmpl.TimeModified
+
+    error := store.connection.Insert(&tmpl)
+
+    if (error != nil) {
+        return Template{}, error
+    }
+
+    return tmpl, nil
 }
