@@ -23,7 +23,7 @@ func TestMongoRegisterTemplate(t *testing.T) {
     var MONGODB_COL string = "templates"
     store := NewMongoStore(MONGODB_URL, MONGODB_DB, MONGODB_COL)
 
-   tmpl := Template{
+    tmpl := Template{
         Name: "MongoTest",
         ImageName: "jupyter/mongo_test",
     }
@@ -40,4 +40,20 @@ func TestMongoRegisterTemplate(t *testing.T) {
 
     equals(t, registered.Name, tmpl.Name)
     equals(t, registered.ImageName, tmpl.ImageName)
+}
+
+func TestMongoGetTemplate(t * testing.T) {
+    var MONGODB_URL string = "127.0.0.1"
+    var MONGODB_DB string = "binder_registery_tests"
+    var MONGODB_COL string = "templates"
+    store := NewMongoStore(MONGODB_URL, MONGODB_DB, MONGODB_COL)
+
+    name := "MongoTest"
+    tmpl, err := store.GetTemplate(name)
+
+    if (err != nil) {
+        t.Error("Error when getting template: ", err)
+    }
+
+    equals(t, tmpl.Name, name)
 }
