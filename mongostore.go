@@ -63,16 +63,22 @@ func (store MongoStore) ListTemplates() ([]Template, error) {
 
 func (store MongoStore) UpdateTemplate(name string,
                                     update map[string]string) error {
-    updates := bson.M{"$set": update}
-    filter := bson.M{"name": name}
+    // If the update parameter is not nil and the
+    // keys in update are all valid then execute the update
+    if (update != nil) {
+        updates := bson.M{"$set": update}
+        filter := bson.M{"name": name}
 
-    err := store.connection.Update(filter, updates)
+        err := store.connection.Update(filter, updates)
 
-    if (err != nil) {
-        return err
+        if (err != nil) {
+            return err
+        } else {
+            return nil
+        }
+    } else {
+        return InvalidParameterError
     }
-
-    return nil
 }
 
 func (store MongoStore) DeleteTemplate(name string) error {
