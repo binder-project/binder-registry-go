@@ -57,3 +57,20 @@ func TestMongoGetTemplate(t * testing.T) {
 
     equals(t, tmpl.Name, name)
 }
+
+func TestMongoListTemplates(t *testing.T) {
+    var MONGODB_URL string = "127.0.0.1"
+    var MONGODB_DB string = "binder_registery_tests"
+    var MONGODB_COL string = "templates"
+    store := NewMongoStore(MONGODB_URL, MONGODB_DB, MONGODB_COL)
+
+    results, err := store.ListTemplates()
+
+    if (err != nil) {
+        t.Error("Error when listing templates: ", err)
+    }
+
+    if (len(results) == 0) {
+        t.Error("ListTemplates did not find any tempaltes!")
+    }
+}
