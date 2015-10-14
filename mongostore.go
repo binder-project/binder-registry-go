@@ -77,3 +77,15 @@ func (store MongoStore) UpdateTemplate(name string,
 
     return result, nil
 }
+
+func (store MongoStore) DeleteTemplate(name string) error {
+    filter := bson.M{"name": name}
+
+    err := store.connection.Remove(filter)
+
+    if (err != nil) {
+        return err
+    }
+
+    return nil
+}
