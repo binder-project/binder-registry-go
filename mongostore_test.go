@@ -74,3 +74,31 @@ func TestMongoListTemplates(t *testing.T) {
         t.Error("ListTemplates did not find any tempaltes!")
     }
 }
+
+func TestMongoDeleteTemplate(t *testing.T) {
+    var MONGODB_URL string = "127.0.0.1"
+    var MONGODB_DB string = "binder_registery_tests"
+    var MONGODB_COL string = "templates"
+    store := NewMongoStore(MONGODB_URL, MONGODB_DB, MONGODB_COL)
+
+    tmpl := Template{
+        Name: "DeleteMePlease",
+        ImageName: "jupyter/delete_me",
+    }
+
+    _, err := store.RegisterTemplate(tmpl)
+
+    if (err == nil) {
+        err := store.DeleteTemplate(tmpl.Name)
+
+        if (err != nil) {
+            t.Error("Error when deleting template: ", err)
+        } else {
+            tmpl, err = store.GetTemplate(tmpl.Name)
+
+            if (err == nil && tmpl != Template{}) {
+                t.Error("Template was not successfully deleted")
+            }
+        }
+    }
+}
