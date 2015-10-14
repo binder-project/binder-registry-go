@@ -62,3 +62,18 @@ func (store MongoStore) ListTemplates() ([]Template, error) {
 
     return results, nil
 }
+
+func (store MongoStore) UpdateTemplate(name string,
+                                    update map[string]int) (Template, error) {
+    updates := bson.M{"$set": update}
+    filter := bson.M{"name": name}
+    var result Template
+
+    err := store.connection.Update(filter, updates)
+
+    if (err != nil) {
+        return Template{}, err
+    }
+
+    return result, nil
+}
