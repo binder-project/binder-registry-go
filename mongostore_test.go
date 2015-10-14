@@ -102,3 +102,33 @@ func TestMongoDeleteTemplate(t *testing.T) {
         }
     }
 }
+
+func TestMongoUpdateTemplate(t *testing.T) {
+    var MONGODB_URL string = "127.0.0.1"
+    var MONGODB_DB string = "binder_registery_tests"
+    var MONGODB_COL string = "templates"
+    store := NewMongoStore(MONGODB_URL, MONGODB_DB, MONGODB_COL)
+
+    tmpl := Template{
+        Name: "UpdateMePlease",
+        ImageName: "jupyter/update_me",
+    }
+
+    _, err := store.RegisterTemplate(tmpl)
+
+    if (err == nil) {
+        updates := make(map[string]string)
+        updates["Name"] = "Updated!"
+        err := store.UpdateTemplate(tmpl.Name, updates)
+
+        if (err != nil) {
+            t.Error("Error when updating template: ", err)
+        } else {
+            updated, err := store.GetTemplate("Updated!")
+
+            if (err == nil && updated == Template{}) {
+                t.Error("Template was not successfully updated!")
+            }
+        }
+    }
+}
