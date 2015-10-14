@@ -17,8 +17,6 @@ func NewMongoStore(server string,
     if (error != nil) {
         return MongoStore{connection: nil, err: error}
     }
-    defer session.Close();
-
     connection := session.DB(database).C(collection)
     return MongoStore{connection: connection, err: nil}
 }
