@@ -13,18 +13,18 @@ type ContainerLimits struct {
 
 // Template defines an image to be run along with its configuration
 type Template struct {
-	Name string `json:"name"`
+	Name string `bson:"name" json:"name"`
 
-	ImageName string `json:"image-name"`
-	Command   string `json:"command"`
+	ImageName string `bson:"image-name" json:"image-name"`
+	Command   string `bson:"command" json:"command"`
 
-	Limits ContainerLimits `json:"limits,omitempty"`
+	Limits ContainerLimits `bson:"limits" json:"limits,omitempty"`
 
-	TimeCreated  time.Time `json:"time-created"`
-	TimeModified time.Time `json:"time-modified"`
+	TimeCreated  time.Time `bson:"time-created" json:"time-created"`
+	TimeModified time.Time `bson:"time-modified" json:"time-modified"`
 
 	// TODO: Add these to the binder API spec?
-	RedirectURI string `json:"redirect-uri,omitempty"`
-	BindIP      string `json:"container-ip,omitempty"`
-	BindPort    int64  `json:"bind-port,omitempty"`
+	RedirectURI string `bson:"redirect-uri" json:"redirect-uri,omitempty"`
+	BindIP      string `bson:"container-ip" json:"container-ip,omitempty"`
+	BindPort    int64  `bson:"bind-port" json:"bind-port,omitempty"`
 }
