@@ -118,7 +118,7 @@ func TestMongoUpdateTemplate(t *testing.T) {
 
     if (err == nil) {
         updates := make(map[string]string)
-        updates["Name"] = "Updated!"
+        updates["name"] = "Updated!"
         err := store.UpdateTemplate(tmpl.Name, updates)
 
         if (err != nil) {

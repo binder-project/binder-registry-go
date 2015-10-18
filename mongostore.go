@@ -1,7 +1,6 @@
 package registry
 
 import "time"
-import "reflect"
 import "gopkg.in/mgo.v2"
 import "gopkg.in/mgo.v2/bson"
 
@@ -73,18 +72,14 @@ func contains(list []string, item string) bool {
 
 func (store MongoStore) UpdateTemplate(name string,
                                     update map[string]string) error {
+    TEMPLATE_KEYS := []string{"name", "image-name", "command", "limits",
+                                "time-created", "time-modified", "redirect-uri",
+                                "container-ip", "bind-port"}
     // If the update parameter is not nil and the
     // keys in update are all valid then execute the update
-    var structFields []string
-    structVal := reflect.Indirect(reflect.ValueOf(Template{}))
-
-    for i := 0; i < structVal.NumField(); i++ {
-        structFields = append(structFields, structVal.Type().Field(i).Name)
-    }
-
     ok := true
-    for _, key := range update {
-        if contains(structFields, key) {
+    for key, _ := range update {
+        if !contains(TEMPLATE_KEYS, key) {
             ok = false
         }
     }
