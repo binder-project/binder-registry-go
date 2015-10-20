@@ -35,3 +35,5 @@ var UnableToListError = APIErrorResponse{Message: "Unable to list templates"}
 
 // TemplateNotFoundError is an APIErrorResponse reported when the template requested doesn't exist
 var TemplateNotFoundError = APIErrorResponse{Message: "Template Not Found"}
+
+var InvalidParameterError = APIErrorResponse{Message: "Invalid parameters provided"}
