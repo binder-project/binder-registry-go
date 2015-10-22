@@ -55,23 +55,23 @@ func (store InMemoryStore) ListTemplates() ([]Template, error) {
 }
 
 // UpdateTemplate will allow for updating ImageName and Command
-func (store InMemoryStore) UpdateTemplate(tmpl Template) (Template, error) {
-	updatedTemplate, ok := store.templateMap[tmpl.Name]
+func (store InMemoryStore) UpdateTemplate(name string, update map[string]string) (Template, error) {
+	updatedTemplate, ok := store.templateMap[name]
 	if !ok {
 		return Template{}, UnavailableTemplateError
 	}
 
 	// For now we allow updates to image name and command
-	if tmpl.ImageName != "" {
-		updatedTemplate.ImageName = tmpl.ImageName
+	if updatedName, ok := update["name"]; ok {
+		updatedTemplate.ImageName = updatedName
 	}
-	if tmpl.Command != "" {
-		updatedTemplate.Command = tmpl.Command
+	if command, ok := update["command"]; ok {
+		updatedTemplate.Command = command
 	}
 
 	updatedTemplate.TimeModified = time.Now().UTC()
 
-	store.templateMap[tmpl.Name] = updatedTemplate
+	store.templateMap[name] = updatedTemplate
 
 	return updatedTemplate, nil
 }

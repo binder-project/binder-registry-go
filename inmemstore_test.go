@@ -91,7 +91,7 @@ func TestListTemplates(t *testing.T) {
 
 func TestUpdateTemplate(t *testing.T) {
 	store := NewInMemoryStore()
-	_, err := store.UpdateTemplate(Template{Name: "NotHere", ImageName: "cool/app"})
+	_, err := store.UpdateTemplate("NotHere", make(map[string]string))
 	equals(t, err, UnavailableTemplateError)
 
 	template := Template{
@@ -107,7 +107,8 @@ func TestUpdateTemplate(t *testing.T) {
 	updatedTemplate.ImageName = "nteract/poster"
 	nequals(t, updatedTemplate, registeredTemplate)
 
-	actualTemplate, err := store.UpdateTemplate(updatedTemplate)
+	actualTemplate, err := store.UpdateTemplate("Test1", map[string]string{
+                                                "image-name": "nteract/poster"})
 	ok(t, err)
 
 	// TODO: Mock time
