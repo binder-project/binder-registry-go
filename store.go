@@ -22,7 +22,7 @@ type Store interface {
 	ListTemplates() ([]Template, error)
 
 	// UpdateTemplate will allow for updating ImageName and Command
-	UpdateTemplate(tmpl Template) (Template, error)
+	UpdateTemplate(name string, update map[string]interface {}) (Template, error)
 }
 
 // AuthStore is an interface for connecting to some authentication endpoint,
