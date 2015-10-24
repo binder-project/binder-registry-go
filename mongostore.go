@@ -71,7 +71,7 @@ func contains(list []string, item string) bool {
 }
 
 func (store MongoStore) UpdateTemplate(name string,
-                                    update map[string]string) error {
+                                    update map[string]interface {}) error {
     TEMPLATE_KEYS := []string{"name", "image-name", "command", "limits",
                                 "time-created", "time-modified", "redirect-uri",
                                 "container-ip", "bind-port"}
