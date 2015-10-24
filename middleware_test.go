@@ -29,7 +29,7 @@ func (s PanicStore) ListTemplates() ([]Template, error) {
 	panic("NO LISTING TEMPLATES FOR YOU")
 }
 
-func (s PanicStore) UpdateTemplate(tmpl Template) (Template, error) {
+func (s PanicStore) UpdateTemplate(name string, update map[string]interface{}) (Template, error) {
 	panic("NO UPDATING TEMPLATES FOR YOU")
 }
 
