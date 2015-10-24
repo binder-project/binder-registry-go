@@ -9,6 +9,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/justinas/alice"
+    "github.com/fatih/structs"
 )
 
 // NewDefaultRouter sets up a mux.Router with the registry routes
@@ -166,7 +167,7 @@ func (registry Registry) templateUpdate(w http.ResponseWriter, r *http.Request) 
 		panic(err)
 	}
 
-	var tmpl Template
+    var tmpl Template
 
 	if err := json.Unmarshal(body, &tmpl); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -182,7 +183,8 @@ func (registry Registry) templateUpdate(w http.ResponseWriter, r *http.Request) 
 
 	tmpl.Name = templateName
 
-	tmpl, err = registry.UpdateTemplate(tmpl)
+	tmpl, err = registry.UpdateTemplate(templateName, structs.Map(tmpl))
+
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		if err := json.NewEncoder(w).Encode(TemplateNotFoundError); err != nil {
