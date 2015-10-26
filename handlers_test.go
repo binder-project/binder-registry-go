@@ -12,8 +12,8 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func setupHandlersTests() (Registry, *mockStore, *mocks.AuthStore) {
-	store := new(mockStore)
+func setupHandlersTests() (Registry, *mocks.Store, *mocks.AuthStore) {
+	store := new(mocks.Store)
 	authStore := new(mocks.AuthStore)
 	registry := Registry{
 		Store:     store,
