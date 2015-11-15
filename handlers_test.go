@@ -8,12 +8,12 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/binder-project/binder-registry/mocks"
+    "github.com/binder-project/binder-registry/mocks"
 	"github.com/gorilla/mux"
 )
 
-func setupHandlersTests() (Registry, *mocks.Store, *mocks.AuthStore) {
-	store := new(mocks.Store)
+func setupHandlersTests() (Registry, *mockStore, *mocks.AuthStore) {
+	store := new(mockStore)
 	authStore := new(mocks.AuthStore)
 	registry := Registry{
 		Store:     store,
