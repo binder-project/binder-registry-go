@@ -23,6 +23,9 @@ type Store interface {
 
 	// UpdateTemplate will allow for updating ImageName and Command
 	UpdateTemplate(tmpl Template) (Template, error)
+
+    // DeeteTemplate will allow for the removal of Template in a Store
+    DeleteTemplate(name string)
 }
 
 // AuthStore is an interface for connecting to some authentication endpoint,
