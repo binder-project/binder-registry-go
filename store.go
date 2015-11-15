@@ -24,7 +24,7 @@ type Store interface {
 	// UpdateTemplate will allow for updating ImageName and Command
 	UpdateTemplate(tmpl Template) (Template, error)
 
-    // DeeteTemplate will allow for the removal of Template in a Store
+    // DeleteTemplate will allow for the removal of Template in a Store
     DeleteTemplate(name string) (Template, error)
 }
 
