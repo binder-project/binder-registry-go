@@ -33,6 +33,10 @@ func (s PanicStore) UpdateTemplate(tmpl Template) (Template, error) {
 	panic("NO UPDATING TEMPLATES FOR YOU")
 }
 
+func (s PanicStore) DeleteTemplate(name string) (Template, error) {
+    panic("NO DELETING TEMPLATES FOR YOU")
+}
+
 func (s PanicStore) Authorize(inner http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		panic("NO AUTHORIZATION FOR YOU")
