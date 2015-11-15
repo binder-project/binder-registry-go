@@ -70,3 +70,88 @@ func matchedAPIError(tb testing.TB, expected APIErrorResponse, w *httptest.Respo
 	ok(tb, err)
 	equals(tb, expected.Message, apiError.Message)
 }
+
+/*
+
+*/
+type mockStore struct {
+    mock.Mock
+    registerCall map[string]RegisterReceiver
+}
+
+type RegisterReceiver struct {
+    Input           Template
+    OutputTemplate  Template
+    OutputError     error
+    Actual          Template
+}
+
+func (_m *mockStore) GetTemplate(name string) (Template, error) {
+    ret := _m.Called(name)
+
+    var r0 Template
+    if rf, ok := ret.Get(0).(func(string) Template); ok {
+        r0 = rf(name)
+    } else {
+        r0 = ret.Get(0).(Template)
+    }
+
+    var r1 error
+    if rf, ok := ret.Get(1).(func(string) error); ok {
+        r1 = rf(name)
+    } else {
+        r1 = ret.Error(1)
+    }
+
+    return r0, r1
+}
+
+func (_m *mockStore) RegisterTemplate(tmpl Template) (Template, error) {
+    receiver := _m.registerCall[tmpl.Name]
+    receiver.Actual = tmpl
+
+    return receiver.OutputTemplate, receiver.OutputError
+}
+
+func (_m *mockStore) ListTemplates() ([]Template, error) {
+    ret := _m.Called()
+
+    var r0 []Template
+    if rf, ok := ret.Get(0).(func() []Template); ok {
+        r0 = rf()
+    } else {
+        if ret.Get(0) != nil {
+            r0 = ret.Get(0).([]Template)
+        }
+    }
+
+    var r1 error
+    if rf, ok := ret.Get(1).(func() error); ok {
+        r1 = rf()
+    } else {
+        r1 = ret.Error(1)
+    }
+
+    return r0, r1
+}
+
+func (_m *mockStore) UpdateTemplate(name string, update map[string]interface{}) (Template, error) {
+    ret := _m.Called(name, update)
+
+    var r0 Template
+    if rf, ok := ret.Get(0).(func(string, map[string]interface{}) Template); ok {
+        r0 = rf(name, update)
+    } else {
+        r0 = ret.Get(0).(Template)
+    }
+
+    var r1 error
+    if rf, ok := ret.Get(1).(func(string, map[string]interface{}) error); ok {
+        r1 = rf(name, update)
+    } else {
+        r1 = ret.Error(1)
+    }
+
+    return r0, r1
+}
+
