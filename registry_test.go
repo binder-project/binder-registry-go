@@ -140,3 +140,23 @@ func (_m *mockStore) UpdateTemplate(tmpl Template) (Template, error) {
 
 	return receiver.OutputTemplate, receiver.OutputError
 }
+
+func (_m *mockStore) DeleteTemplate(name string) (Template, error) {
+    ret := _m.Called(name)
+
+    var r0 Template
+    if rf, ok := ret.Get(0).(func(string) Template); ok {
+        r0 = rf(name)
+    } else {
+        r0 = ret.Get(0).(Template)
+    }
+
+    var r1 error
+    if rf, ok := ret.Get(1).(func(string) error); ok {
+        r1 = rf(name)
+    } else {
+        r1 = ret.Error(1)
+    }
+
+    return r0, r1
+}

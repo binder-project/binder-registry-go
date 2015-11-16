@@ -75,3 +75,14 @@ func (store InMemoryStore) UpdateTemplate(tmpl Template) (Template, error) {
 
 	return updatedTemplate, nil
 }
+
+func (store InMemoryStore) DeleteTemplate(name string) (Template, error) {
+    template, ok := store.templateMap[name]
+    if !ok {
+        return Template{}, UnavailableTemplateError
+    }
+
+    delete(store.templateMap, name);
+
+    return template, nil
+}

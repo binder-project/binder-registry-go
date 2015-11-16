@@ -117,3 +117,24 @@ func TestUpdateTemplate(t *testing.T) {
 	equals(t, updatedTemplate, actualTemplate)
 
 }
+
+func TestDeleteTemplate(t *testing.T) {
+    store := NewInMemoryStore()
+
+    _, err := store.DeleteTemplate("NotHere")
+    equals(t, err, UnavailableTemplateError)
+
+    template := Template{
+        Name: "Test1",
+        ImageName: "jupyter/whoa",
+    }
+
+    registeredTemplate, err := store.RegisterTemplate(template)
+    ok(t, err)
+
+    deletedTemplate, err := store.DeleteTemplate(registeredTemplate.Name)
+    ok(t, err)
+
+    equals(t, deletedTemplate, registeredTemplate)
+    equals(t, len(store.templateMap), 0)
+}
